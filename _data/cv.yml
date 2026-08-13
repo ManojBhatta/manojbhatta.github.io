@@ -1,189 +1,144 @@
 cv:
-  name: Albert Einstein
-  label: Scientist
-  email: einstein@example.com
-  location: Princeton, NJ
+  name: Manoj Bhatta
+  label: Robotics & AI Engineer
+  email: bhattamanoz124@gmail.com
+  phone: 
+  location: Nepal
   image: ""
-  summary: A German-born theoretical physicist, widely ranked among the greatest and most influential scientists of all time
-
   social_networks:
-    - network: X
-      username: AlbertEinstein
     - network: GitHub
-      username: example
+      username: manojbhatta
     - network: LinkedIn
-      username: example
+      username: manojbhatta101
 
-  address:
-    street: 2712 Broadway St
-    city: San Francisco
-    region: California
-    postalCode: CA 94115
-    countryCode: US
+  summary: Mechanical Engineering graduate with hands-on experience in designing and building robotic systems. Currently exploring the intersection of robotics and AI, specifically the use of foundation VLMs and LLMs for autonomous navigation in dynamic environments.
 
   sections:
     Education:
-      - institution: University of Zurich
-        location: Zurich, Switzerland
-        url: https://www.uzh.ch/
-        area: Physics
-        studyType: PhD
-        start_date: 1900
-        end_date: 1905
-        score: ""
-        courses: "Theory of Relativity"
+      - institution: Institute of Engineering, Pulchowk Campus
+        location: Lalitpur, Nepal
+        url: https://pcampus.edu.np/
+        area: Mechanical Engineering
+        studyType: Bachelors in Mechanical Engineering
+        start_date: 2021
+        end_date: 2025
+        courses:
         highlights:
-          - Description 1.
-          - Description 2.
-
-      - institution: Eidgenössische Technische Hochschule
-        location: Zurich, Switzerland
-        area: Physics
-        studyType: Federal teaching diploma
-        start_date: 1896
-        end_date: 1900
-        highlights:
-          - Description 1.
-          - Description 2.
 
     Experience:
-      - company: Institute for Advanced Study, Princeton University
-        position: Professor of Theoretical Physics
-        location: Princeton University, NJ
-        start_date: 1933
-        end_date: 1955
-        summary: Teaching at Palmer Physical Laboratory (now 302 Frist Campus Center). While not a professor at Princeton, I associated with the physics professors and continued to give lectures on campus.
+      - company: Sudur Paschimanchal Academy
+        position: Instructor, AI
+        location: Nepal
+        start_date: 2025-12
+        end_date: 2026-04
+        summary: Taught AI to 30 undergraduates covering search, symbolic AI, ML, and deep learning; prepared and graded lab assignments.
         highlights:
-          - Relativity
-          - Description 2.
 
-      - company: California Institute of Technology
-        position: Visiting Professor
-        location: Pasadena, California, US
-        start_date: 1933
-        end_date: 1933
+      - company: AnK [Accelerated Komputing]
+        position: Research Engineer
+        location: Nepal
+        start_date: 2025-05
+        end_date: 2025-12
+        summary: Robotics and multi-agent systems research.
         highlights:
-          - Description 1.
-          - Description 2.
+          - Built a synthetic data pipeline (Isaac Sim, MoveIt 2) to fine-tune GR00T N1.5 VLA for pick-and-place, raising sim success rate from 0% to 57%.
+          - Built a RAG-based multi-agent framework (planner, code generator, tester) for a proprietary Julia simulation library; traced hallucinated API calls to sparse documentation.
+          - Benchmarked a multi-agent framework (MEDA) for generating 3D models from natural language prompts.
 
-      - company: Kaiser Wilhelm Institute for Physics
-        position: Director
-        location: Berlin, Germany
-        start_date: 1917
-        end_date: 1933
-
-      - company: Karl-Ferdinand University
-        position: Professor of Theoretical Physics
-        location: Prague, Czechoslovakia
-        start_date: 1911
-        end_date: 1917
-
-      - company: University of Zurich
-        position: Associate Professor of Theoretical Physics
-        location: Zurich, Switzerland
-        start_date: 1909
-        end_date: 1911
-
-    Volunteer:
-      - company: People's Climate March
-        position: Lead Organizer
-        location: Zurich, Switzerland
-        start_date: 2014-04-01
-        end_date: 2015-07-01
-        summary: Lead organizer for the New York City branch of the People's Climate March, the largest climate march in history.
+      - company: AnK [Accelerated Komputing]
+        position: Research Intern
+        location: Nepal
+        start_date: 2024-08
+        end_date: 2024-09
+        summary: Implemented a Physics-Informed Neural Network (PINN) for 2D transient heat conduction, achieving 5% weighted error.
         highlights:
-          - "Awarded 'Climate Hero' award by Greenpeace for my efforts organizing the march."
-          - "Men of the year 2014 by Time magazine"
+
+      - company: Orion Space
+        position: Research Intern
+        location: Nepal
+        start_date: 2024-04
+        end_date: 2024-06
+        summary: Worked on ADCS for a single-axis reaction wheel system on a FloatSat, using system identification and PID control for stability.
+        highlights:
+
+      - company: Abhiyan Engineering Nepal
+        position: Design Intern
+        location: Nepal
+        start_date: 2023-10
+        end_date: 2024-02
+        summary: Designed an industrial sand-level measurement device now in use at Chameliya Hydropower Plant; handled design calculations, 3D models, and technical drawings in SolidWorks.
+        highlights:
+
+      - company: Robotics Club, Pulchowk Campus
+        position: Member
+        location: Lalitpur, Nepal
+        start_date: 2022-02
+        end_date: 2023-08
+        summary: Led design of ring-shooting robots for ABU Robocon 2023 (Mabuchi Motor Award); implemented ROS2 pole detection for shot placement and prototyped with Arduino/STM32.
+        highlights:
+
+    # Volunteer:
+    #   - company: LOCUS IOE Pulchowk (Hardware Fellowship Program)
+    #     position: Robotics Tutor
+    #     location: Lalitpur, Nepal
+    #     summary: Mentored 36 junior students in basic electronics and introductory robotics.
+
+    #   - company: Pulchowk Campus
+    #     position: SolidWorks Tutor
+    #     location: Lalitpur, Nepal
+    #     summary: Mentored junior mechanical engineering students in design fundamentals, 3D modeling, and 3D printing using SolidWorks.
 
     Awards:
-      - title: Nobel Prize in Physics
-        authors:
-          - "Royal Swedish Academy of Sciences"
-        date: 1921-11-01
-        awarder: Royal Swedish Academy of Sciences
-        url: https://www.nobelprize.org/prizes/physics/1921/einstein/biographical/
-        summary: The Nobel Prizes are five separate prizes that, according to Alfred Nobel's will of 1895, are awarded to 'those who, during the preceding year, have conferred the greatest benefit to humankind.'
+      - title: Second Runner Up, ABU Robocon 2022
+        awarder: ABU Robocon
+        date: 2022
+        summary: Achieved among 13 countries in the Asia Pacific region, held in Delhi, India.
 
-      - title: Max Planck Medal
-        authors:
-          - "German Physical Society"
-        date: 2029
-        awarder: German Physical Society
-        summary: Awarded for outstanding scientific achievement
+      - title: Mabuchi Motor Award, ABU Robocon 2023
+        awarder: ABU Robocon
+        date: 2023
+        summary: Awarded in Cambodia for compact design of mechanism and resource-optimized engineering.
 
-    Publications:
-      - title: Zur Elektrodynamik bewegter Körper
-        authors:
-          - Albert Einstein
-        publisher: Annalen der Physik
-        releaseDate: 1905-06-30
-        url: https://en.wikisource.org/wiki/Translation:On_the_Electrodynamics_of_Moving_Bodies
-        summary: It concerned an interpretation of the Michelson–Morley experiment and the properties of light and time. Special relativity incorporates the principle that the speed of light is the same for all inertial observers regardless of the state of motion of the source.
+      - title: Top 10 Performer, Samsung Innovation Campus
+        awarder: Samsung
+        date: 2024
+        summary: Coding and Programming with Python, among 100+ participants across multiple departments on campus.
 
-      - title: Über einen die Erzeugung und Verwandlung des Lichtes betreffenden heuristischen Gesichtspunkt
-        authors:
-          - Albert Einstein
-        publisher: Annalen der Physik
-        releaseDate: 1905-03-18
-        url: https://de.wikisource.org/wiki/Über_einen_die_Erzeugung_und_Verwandlung_des_Lichtes_betreffenden_heuristischen_Gesichtspunkt
-        summary: In the second paper, he applied the quantum theory to light to explain the photoelectric effect. In particular, he used the idea of light quanta (photons) to explain experimental results, but stressed the importance of the experimental results. The importance of his work on the photoelectric effect earned him the Nobel Prize in Physics in 1921.
-
-      - title: Die Grundlage der allgemeinen Relativitätstheorie
-        authors:
-          - Albert Einstein
-        publisher: Annalen der Physik
-        releaseDate: 1916-03-20
-        url: https://de.wikisource.org/wiki/Die_Grundlage_der_allgemeinen_Relativitätstheorie
-        summary: The publication of the theory of general relativity made him internationally famous. He was professor of physics at the universities of Zurich (1909–1911) and Prague (1911–1912), before he returned to ETH Zurich (1912–1914).
-
-    Skills:
-      - name: Physics
-        level: Master
-        icon: fa-solid fa-hashtag
-        keywords: "Quantum Mechanics, Quantum Computing, Quantum Information, Quantum Cryptography, Quantum Communication, Quantum Teleportation"
-
-    Languages:
-      - name: German
-        summary: "Native speaker"
-
-      - name: English
-        summary: "Fluent"
-
-    Interests:
-      - name: Physics
-        icon: fa-solid fa-tag
-        keywords: "Quantum Mechanics, Quantum Computing, Quantum Information, Quantum Cryptography, Quantum Communication, Quantum Teleportation"
-
-    Certificates:
-      - name: Machine Learning
-        date: 2018-01-01
-        issuer: Stanford University
-        icon: fa-solid fa-location-dot
-
-      - name: Quantum Computing
-        date: 2018-01-01
-        issuer: Stanford University
-        icon: fa-solid fa-tag
-
-      - name: Quantum Information
-        date: 2018-01-01
-        issuer: Stanford University
-        icon: fa-solid fa-envelope
+      - title: Government of Nepal Scholarship
+        awarder: Government of Nepal
+        summary: A merit-based scholarship awarded to top performers in the entrance examination for undergraduate engineering programs in Nepal.
 
     Projects:
-      - name: Quantum Computing
-        summary: Quantum computing is the use of quantum-mechanical phenomena such as superposition and entanglement to perform computation. Computers that perform quantum computations are known as quantum computers.
+      - name: Open Vocabulary Navigation
+        summary: Implemented a ROS2-based open-vocabulary navigation system for a robot in Gazebo using dense semantic mapping and CLIP-based visual grounding for goal point specification via natural language prompts.
         highlights:
-          - Quantum Teleportation
-          - Quantum Cryptography
-        start_date: 2018-01-01
-        end_date: 2018-01-01
+          - Currently exploring methodologies for improving real-time navigation performance for dynamic environments like houses. 
+        url: https://github.com/manojbhatta/ov_nav
 
-    References:
-      - name: Professor John Doe
-        icon: fa-solid fa-laptop
-        reference: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam condimentum, diam quis convallis euismod, arcu mi ullamcorper lorem, a vestibulum nunc magna at sem. Sed in risus ac felis varius blandit.
+      - name: Autonomous Mobile Robot using ROS2
+        summary: Developed an autonomous robot for navigation in campus premises using SLAM Toolbox and the Nav2 stack in ROS2, utilizing 3D LiDAR for localization and mapping, achieving average goal point position accuracy of about 0.35 m over a path length of about 25 m.
+        highlights:
+          - Tested the impact of various parameters on navigation performance and fine-tuned them using the Gazebo simulator.
+          - Implemented low-level motor control and robot kinematics, encoder data acquisition, and UART communication using STM32.
 
-      - name: Professor Jane Smith
-        icon: fa-solid fa-thumbtack
-        reference: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam condimentum, diam quis convallis euismod, arcu mi ullamcorper lorem, a vestibulum nunc magna at sem. Sed in risus ac felis varius blandit.
+      - name: 4-Bar Linkage Synthesizer
+        summary: Developed a Python program to calculate the parameters of a four-bar linkage that can trace an arbitrary path specified by the user, based on the Circular Proximity Function (CPF) and a Differential Evolution optimization algorithm.
+        highlights:
+          - "Tools used: Python (NumPy, Matplotlib, SciPy)"
+
+    Skills:
+      - name: Languages
+        level: ""
+        keywords: "C++, C, Python, Julia"
+
+      - name: Frameworks and Platforms
+        level: ""
+        keywords: "ROS2, Gazebo, Isaac Sim, MoveIt2, Arduino, STM32, Git"
+
+      - name: Libraries
+        level: ""
+        keywords: "NumPy, PyTorch, Matplotlib, SciPy"
+
+    Interests:
+      - name: Robotics & Embodied AI
+        keywords: "Reinforcement learning, sim-to-real transfer, VLM/LLM-based navigation, legged and wheeled locomotion"
