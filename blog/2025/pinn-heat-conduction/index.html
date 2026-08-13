@@ -1,0 +1,176 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> Solving 2D Transient Heat Conduction with Physics-Informed Neural Networks | Manoj Bhatta </title> <meta name="author" content="Manoj Bhatta"> <meta name="description" content="Building a mesh-free PDE solver in PyTorch, validating it against an ANSYS finite-element solution, and what that taught me about scientific machine learning."> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+  :root {
+    --max-content-width: 930px;
+  }
+</style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tocbot@4.36.4/dist/tocbot.css" integrity="sha256-zTN0r+0OKaIv2xqeNNIYxNk0pWJ6+IqPGc1iDgVzWF0=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%E2%9A%9B%EF%B8%8F&lt;/text&gt;&lt;/svg&gt;"> <link rel="stylesheet" href="/assets/css/main.css?v=f0b101217084a90093badfe99ff9a7d1"> <link rel="canonical" href="https://manojbhatta.github.io/blog/2025/pinn-heat-conduction/"> <script src="/assets/js/theme.js?v=7af685e2ba20b37fef545c97b8064050"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav "> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> <span class="font-weight-bold">Manoj</span> Bhatta </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item "> <a class="nav-link" href="/projects/">projects </a> </li> <li class="nav-item "> <a class="nav-link" href="/cv/">CV </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="row"> <div class="col-sm-3"> <nav id="toc-sidebar" class="sticky-top toc toc-sidebar" aria-label="Table of contents" data-toc-collapse="expanded" data-toc-collapse-depth=""></nav> </div> <div class="col-sm-9"> <div class="post"> <header class="post-header"> <h1 class="post-title">Solving 2D Transient Heat Conduction with Physics-Informed Neural Networks</h1> <p class="post-meta"> Created on April 02, 2025 </p> <p class="post-tags"> <a href="/blog/2025"> <i class="fa-solid fa-calendar fa-sm"></i> 2025 </a>   ·   <a href="/blog/tag/pinn"> <i class="fa-solid fa-hashtag fa-sm"></i> pinn</a>   <a href="/blog/tag/scientific-ml"> <i class="fa-solid fa-hashtag fa-sm"></i> scientific-ml</a> </p> </header> <article class="post-content"> <div id="markdown-content"> <p>During my internship,The question I explored was how can surrogate models like Physics informed neural nets be used as surrogate models as a replacement to traditional numerical solvers. Physics-Informed Neural Networks (PINNs) are a mesh-free way to solve PDEs by baking the governing equations directly into the loss function instead of relying purely on labeled data. I wanted to move past the idea and actually build one, benchmark it rigorously against a trusted numerical solution, and understand where it holds up and where it doesn’t.</p> <p>This post walks through what I built, how I built it, and — more importantly — what the process taught me about scientific machine learning.</p> <h2 id="the-problem-2d-transient-heat-conduction">The problem: 2D transient heat conduction</h2> <p>I picked a classic but non-trivial benchmark: transient heat diffusion in a 2D square plate, governed by the heat equation</p> \[\frac{\partial T}{\partial t} = \alpha \left( \frac{\partial^2 T}{\partial x^2} + \frac{\partial^2 T}{\partial y^2} \right)\] <p>on the domain \(\Omega = \{(x, y, t) \mid x, y \in [0, 1],\ t \in [0, 1]\}\) (normalized time), with Dirichlet boundary conditions: the bottom wall held at a fixed high temperature, and the top, left, and right walls held at a lower fixed temperature, with a uniform initial condition across the plate. Normalizing the temperatures to a 0–1 range kept the loss landscape well-scaled during training, which turned out to matter more than I initially expected.</p> <p>To have a credible reference to validate against, I first solved the same problem in <strong>ANSYS Transient Thermal</strong> using a 10,000-node finite-element mesh. That gave me a ground-truth temperature field I could compare the network’s predictions against at multiple points in time.</p> <h2 id="why-pinns-and-what-makes-them-different">Why PINNs, and what makes them different</h2> <p>A standard neural network learns a mapping from data alone. A PINN learns a mapping that is <em>also</em> constrained to satisfy a differential equation everywhere in the domain, by penalizing the residual of the PDE at randomly sampled points. This blurs the line between data-driven and physics-based modeling: no labeled interior data is required at all — the “supervision” comes from calculus.</p> <p>That property is what makes PINNs appealing for engineering problems: no expensive mesh generation, and, in principle, better generalization since the model is anchored to physical law rather than pattern-matching alone. It also comes with real costs (I’ll get to those), which is exactly why I wanted to benchmark it seriously rather than take the promise at face value.</p> <h2 id="building-the-network">Building the network</h2> <p>The architecture is a plain fully-connected network taking <code class="language-plaintext highlighter-rouge">(x, y, t)</code> as input and predicting temperature <code class="language-plaintext highlighter-rouge">T</code> as a scalar output, using <code class="language-plaintext highlighter-rouge">tanh</code> activations (smooth and infinitely differentiable — important, since I need to differentiate the network’s output twice with respect to its inputs):</p> <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">pinn2d</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">inp_dim</span><span class="p">,</span> <span class="n">out_dim</span><span class="p">,</span> <span class="n">no_layers</span><span class="p">,</span> <span class="n">no_hidden_units</span><span class="p">,</span> <span class="n">act</span><span class="o">=</span><span class="n">nn</span><span class="p">.</span><span class="nc">Tanh</span><span class="p">()):</span>
+        <span class="nf">super</span><span class="p">().</span><span class="nf">__init__</span><span class="p">()</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">act</span> <span class="o">=</span> <span class="n">act</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">inp_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="nc">Linear</span><span class="p">(</span><span class="n">inp_dim</span><span class="p">,</span> <span class="n">no_hidden_units</span><span class="p">)</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">hidden_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="nc">ModuleList</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">nn</span><span class="p">.</span><span class="nc">Linear</span><span class="p">(</span><span class="n">no_hidden_units</span><span class="p">,</span> <span class="n">no_hidden_units</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="n">no_layers</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="p">)</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">out_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="p">.</span><span class="nc">Linear</span><span class="p">(</span><span class="n">no_hidden_units</span><span class="p">,</span> <span class="n">out_dim</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">cat</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">act</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="nf">inp_layer</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">self</span><span class="p">.</span><span class="n">hidden_layers</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="nf">act</span><span class="p">(</span><span class="nf">layer</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">self</span><span class="p">.</span><span class="nf">out_layer</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</code></pre></div></div> <h2 id="sampling-the-domain-instead-of-meshing-it">Sampling the domain instead of meshing it</h2> <p>Since there’s no mesh, the model needs points to evaluate its physics loss at. I used a <strong>Latin Hypercube Sampler</strong> (via <code class="language-plaintext highlighter-rouge">scipy.stats.qmc</code>) rather than uniform random sampling, because LHS gives much better space-filling coverage of the domain with fewer points — useful when every extra collocation point adds cost to every training step through backpropagation. Concretely, I sampled:</p> <ul> <li> <strong>~8,000 interior collocation points</strong> <code class="language-plaintext highlighter-rouge">(x, y, t)</code> where the PDE residual is enforced</li> <li> <strong>~800 points per boundary edge</strong> (left, right, top, bottom) where the Dirichlet conditions are enforced</li> <li>The same interior <code class="language-plaintext highlighter-rouge">(x, y)</code> points at <code class="language-plaintext highlighter-rouge">t = 0</code> for the initial condition</li> </ul> <h2 id="encoding-the-physics-automatic-differentiation-as-the-loss">Encoding the physics: automatic differentiation as the loss</h2> <p>This is the core trick of a PINN, and the part I found most instructive. Instead of discretizing derivatives with finite differences on a grid, I get <em>exact</em> derivatives of the network’s output with respect to its inputs using PyTorch’s <code class="language-plaintext highlighter-rouge">autograd</code>:</p> <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">u</span> <span class="o">=</span> <span class="nf">pinn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+<span class="n">dudt</span>  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">autograd</span><span class="p">.</span><span class="nf">grad</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">grad_outputs</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nf">ones_like</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">create_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">dudx</span>  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">autograd</span><span class="p">.</span><span class="nf">grad</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">grad_outputs</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nf">ones_like</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">create_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">dudx2</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">autograd</span><span class="p">.</span><span class="nf">grad</span><span class="p">(</span><span class="n">dudx</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">grad_outputs</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nf">ones_like</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">create_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">dudy</span>  <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">autograd</span><span class="p">.</span><span class="nf">grad</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">grad_outputs</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nf">ones_like</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">create_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">dudy2</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">autograd</span><span class="p">.</span><span class="nf">grad</span><span class="p">(</span><span class="n">dudy</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">grad_outputs</span><span class="o">=</span><span class="n">torch</span><span class="p">.</span><span class="nf">ones_like</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">create_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">pde_loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">dudt</span> <span class="o">-</span> <span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="n">dudx2</span> <span class="o">+</span> <span class="n">dudy2</span><span class="p">)).</span><span class="nf">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="nf">mean</span><span class="p">()</span>
+</code></pre></div></div> <p><code class="language-plaintext highlighter-rouge">create_graph=True</code> is what makes second-order differentiation possible — it keeps the computation graph alive so I can differentiate a derivative again. The full loss combines three terms:</p> \[\mathcal{L} = \mathcal{L}_{\text{PDE}} + \lambda \cdot \mathcal{L}_{\text{boundary}} + \mathcal{L}_{\text{initial}}\] <p>I weighted the boundary loss (\(\lambda = 5\)) more heavily than the PDE residual and initial-condition terms. This was a deliberate, empirical choice: early runs without extra boundary weighting produced solutions that satisfied the interior physics reasonably well but drifted from the prescribed wall temperatures, since the PDE residual term — sampled over thousands of interior points — otherwise dominates the gradient signal.</p> <h2 id="a-two-stage-optimization-strategy">A two-stage optimization strategy</h2> <p>I trained in two phases, which is standard practice for PINNs:</p> <ol> <li> <strong>Adam</strong> (5,000 epochs, initial LR 1e-3, exponential decay at rate 0.95 every 100 steps) to get into a good basin of the loss landscape efficiently.</li> <li> <strong>L-BFGS</strong> (a second-order quasi-Newton method, ~3000 iterations) to fine-tune from there.</li> </ol> <p>Adam is great at making fast early progress with noisy, high-dimensional gradients, but PINN loss landscapes are notoriously stiff near convergence — L-BFGS, which uses curvature information, squeezes out the last bit of accuracy far more efficiently than Adam alone. Switching optimizers mid-training rather than committing to just one was one of the clearer lessons from this project: no single optimizer is uniformly best across the whole training trajectory.</p> <h2 id="architecture-comparison">Architecture comparison:</h2> <p>I trained three architectures under identical conditions — a shallow-and-narrow network, a medium one, and a deep-and-wide one — to see how capacity trades off against accuracy for this problem:</p> <table> <thead> <tr> <th style="text-align: left">Architecture</th> <th style="text-align: center">Loss after 100 epochs</th> <th style="text-align: center">Validation domain relative error</th> </tr> </thead> <tbody> <tr> <td style="text-align: left">4 layers × 50 units</td> <td style="text-align: center">0.7492</td> <td style="text-align: center">0.01456</td> </tr> <tr> <td style="text-align: left">5 layers × 100 units</td> <td style="text-align: center">0.029</td> <td style="text-align: center"><strong>0.01421</strong></td> </tr> <tr> <td style="text-align: left">6 layers × 200 units</td> <td style="text-align: center">0.40</td> <td style="text-align: center">0.01412</td> </tr> </tbody> </table> <p>The 5×100 network turned out to be the sweet spot for this problem: it converged dramatically faster than the other two in early training and landed within a hair of the largest network’s final accuracy, at a fraction of the training cost. The 6×200 network’s advantage over 5×100 in final relative error was marginal, which shows that <strong>more parameters buys diminishing returns once the network has enough capacity to represent the solution manifold</strong>, and for smooth, low-dimensional PDE solutions like this one, that ceiling is reached quickly.</p> <h2 id="validating-against-ansys">Validating against ANSYS</h2> <p>I compared the PINN’s predicted temperature field against the ANSYS finite-element solution at five different points in time, computing the average absolute error over the domain at each snapshot.</p> <p>The PINN tracked the ANSYS solution closely in the interior of the domain across all time steps, with average errors in the low single-digit percent range of the temperature scale. The largest discrepancies consistently showed up <strong>near the boundary at early time</strong>, exactly where the initial condition and the boundary condition are discontinuous with each other (the interior starts at one temperature while the bottom wall is instantaneously held at another). This is a well-known failure mode for PINNs — sharp gradients and discontinuities are hard for a smooth, globally-supported network to represent.</p> <h2 id="what-this-project-actually-taught-me">What this project actually taught me</h2> <p>A few things stuck with me well beyond this specific problem:</p> <ul> <li> <strong>Loss balancing.</strong> Which term dominates training determines what the network gets “good at” first and getting boundary conditions weighted properly was the difference between a physically meaningful solution and one that merely looked plausible in the interior.</li> <li> <strong>Capacity has a ceiling for a given problem.</strong> Throwing more layers and units at a PDE doesn’t help once the network can already represent the solution.</li> <li> <strong>PINNs trade meshing cost for training cost.</strong> They’re compelling when geometry is complex or a mesh is expensive to generate and maintain, but for a well-posed, mesh-friendly problem like this one, a classical FEM solver like ANSYS is still faster and more accurate out of the box. The value proposition of PINNs is clearest in exactly the cases where traditional solvers struggle — irregular domains, inverse problems, and settings where labeled data is scarce but physical laws are known — and this project gave me a much more grounded sense of when that trade-off actually pays off.</li> </ul> <h2 id="limitations">Limitations</h2> <p>One thing this setup does <strong>not</strong> test is generalization across boundary conditions. As built, the boundary temperatures are hardcoded constants inside the loss function rather than inputs to the network — so the trained model only ever knows how to solve the one boundary-value problem it was trained on.</p> <p><em>Full implementation (PyTorch, <code class="language-plaintext highlighter-rouge">autograd</code>-based PDE residuals, LHS sampling, Adam + L-BFGS training) available at <a href="https://github.com/ManojBhatta/pinn" rel="external nofollow noopener" target="_blank">github</a></em></p> </div> </article> </div> </div> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Manoj Bhatta. Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="external nofollow noopener">GitHub Pages</a>. </div> </footer> <script>
+  window.alFolio = {
+    compatBootstrap: false
+  };
+</script> <script src="/assets/js/nav-toggle.js?v=141bd79a73ebc0f0b6ea58e440ae79fc"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?v=e49affc7bd2646f6acdad1dbe02c2359" type="text/javascript"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/al_math/js/mathjax-setup.js"></script> <script defer src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script> <script src="/assets/js/tooltips-setup.js?v=fe487e99db6c43751e6e7bdb2d6a0611"></script> <script defer src="https://cdn.jsdelivr.net/npm/tocbot@4.36.4/dist/tocbot.min.js" integrity="sha256-lo/r+jQ81wWrxdIiiiEEd538z4+dTJTt+leOuAS7GCw=" crossorigin="anonymous"></script> <script src="/assets/js/no_defer.js?v=53b1b1a645525975c963ce8bf8bfefcf"></script> <script defer src="/assets/js/common.js?v=87baac90f765f2f3362dcf6aaf312a8a"></script> <script defer src="/assets/js/copy_code.js?v=c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?v=896d254890d9b47f0281f63bfccf0dee"></script> <script async src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script> <script async src="https://badge.dimensions.ai/badge.js"></script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/al_img_tools/js/zoom.js"></script> <script defer src="/assets/js/progress-bar.js?v=499464c5c63ced6cf7ad62509f1e2610" type="text/javascript"></script> <script src="https://cdn.jsdelivr.net/npm/vanilla-back-to-top@7.2.1/dist/vanilla-back-to-top.min.js" integrity="sha256-uMJJ3EoTyfRBoTbR+lrfu1uRQ87RZG8AR3cVNuQVeFg=" crossorigin="anonymous"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/al_search/js/search/ninja-keys.min.js"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/al_search/js/search-setup.js"></script> <script>
+// get the ninja-keys element
+const ninja = document.querySelector('ninja-keys');
+
+// add the home and posts menu items
+ninja.data = [{
+    id: "nav-about",
+    title: "about",
+    section: "Navigation",
+    handler: () => {
+      window.location.href = "/";
+    },
+  },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
+          },
+        },{id: "nav-projects",
+          title: "projects",
+          description: "A growing collection of your cool projects.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/projects/";
+          },
+        },{id: "nav-cv",
+          title: "CV",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/cv/";
+          },
+        },{id: "post-open-vocabulary-navigatoin",
+        
+          title: "Open-vocabulary navigatoin",
+        
+        description: "A review of the recent open vocabulary object navigation frameworks",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/ov-nav/";
+          
+        },
+      },{id: "post-solving-2d-transient-heat-conduction-with-physics-informed-neural-networks",
+        
+          title: "Solving 2D Transient Heat Conduction with Physics-Informed Neural Networks",
+        
+        description: "Building a mesh-free PDE solver in PyTorch, validating it against an ANSYS finite-element solution, and what that taught me about scientific machine learning.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2025/pinn-heat-conduction/";
+          
+        },
+      },{id: "projects-four-bar-mechanism-synthesis",
+          title: 'Four-bar mechanism synthesis',
+          description: "Calculating four bar parameters to trace a given path",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/fourbar/";
+            },},{id: "projects-autonomous-navigation",
+          title: 'Autonomous Navigation',
+          description: "Designed and developed an AGV capable of navigating unknown environments using LiDAR-based SLAM and Nav2.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/fyp/";
+            },},{id: "projects-open-vocabulary-navigation",
+          title: 'Open-Vocabulary Navigation',
+          description: "Open-vocabulary navigation in a Gazebo living-room. A dense CLIP-feature semantic map is built from posed RGB-D data and queried by arbitrary text to drive a robot to the right object.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/ovnav/";
+            },},{id: "projects-pinn",
+          title: 'PINN',
+          description: "Implementation of Physics Informed Neural Network for 2d heat conduction",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/pinn/";
+            },},{id: "projects-rl-for-balancing-wheeled-biped",
+          title: 'RL for balancing wheeled biped',
+          description: "an isaac lab env for making a wheeled biped learn to balance",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/upkie/";
+            },},{id: "teachings-data-science-fundamentals",
+          title: 'Data Science Fundamentals',
+          description: "This course covers the foundational aspects of data science, including data collection, cleaning, analysis, and visualization. Students will learn practical skills for working with real-world datasets.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/data-science-fundamentals/";
+            },},{id: "teachings-introduction-to-machine-learning",
+          title: 'Introduction to Machine Learning',
+          description: "This course provides an introduction to machine learning concepts, algorithms, and applications. Students will learn about supervised and unsupervised learning, model evaluation, and practical implementations.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/introduction-to-machine-learning/";
+            },},{
+        id: 'social-email',
+        title: 'email',
+        section: 'Socials',
+        handler: () => {
+          window.open("mailto:%62%68%61%74%74%61%6D%61%6E%6F%7A%31%32%34@%67%6D%61%69%6C.%63%6F%6D", "_blank");
+        },
+      },{
+        id: 'social-linkedin',
+        title: 'LinkedIn',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://www.linkedin.com/in/manojbhatta101", "_blank");
+        },
+      },{
+        id: 'social-github',
+        title: 'GitHub',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://github.com/manojbhatta", "_blank");
+        },
+      },{
+      id: 'light-theme',
+      title: 'Change theme to light',
+      description: 'Change the theme of the site to Light',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("light");
+      },
+    },
+    {
+      id: 'dark-theme',
+      title: 'Change theme to dark',
+      description: 'Change the theme of the site to Dark',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("dark");
+      },
+    },
+    {
+      id: 'system-theme',
+      title: 'Use system default theme',
+      description: 'Change the theme of the site to System Default',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("system");
+      },
+    },];
+
+</script> <script src="/assets/al_search/js/shortcut-key.js"></script> </body> </html>

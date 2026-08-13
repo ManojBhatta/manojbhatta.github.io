@@ -1,0 +1,184 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> Open-Vocabulary Navigation | Manoj Bhatta </title> <meta name="author" content="Manoj Bhatta"> <meta name="description" content="Open-vocabulary navigation in a Gazebo living-room. A dense CLIP-feature semantic map is built from posed RGB-D data and queried by arbitrary text to drive a robot to the right object."> <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:; media-src 'self' https:; frame-src 'self' https:; connect-src 'self' https:;"> <style>
+  :root {
+    --max-content-width: 930px;
+  }
+</style> <link rel="stylesheet" href="/assets/css/tailwind.css?v=50c64c15cbb9fd1ce6056fdb8bcb4b62"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.2.0/css/all.min.css" integrity="sha256-MVopmdyC2tYTiJ8wlktf0uh0v4NgT+vNdyVFepi7Q0c=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/academicons@1.9.5/css/academicons.min.css" integrity="sha256-SzrCOBJbGVFMahewkgjwnApaV2+av1DwMAA+/QGLyZw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="https://cdn.jsdelivr.net/npm/scholar-icons@1.0.3/css/scholar-icons.css" integrity="sha256-VY3hHVj/hNX3fYG6wtbA6TcKJQl7+FthzGSyIB64klY=" crossorigin="anonymous"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?v=591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="data:image/svg+xml,&lt;svg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%20100%20100%22&gt;&lt;text%20y=%22.9em%22%20font-size=%2290%22&gt;%E2%9A%9B%EF%B8%8F&lt;/text&gt;&lt;/svg&gt;"> <link rel="stylesheet" href="/assets/css/main.css?v=f0b101217084a90093badfe99ff9a7d1"> <link rel="canonical" href="https://manojbhatta.github.io/projects/ovnav/"> <script src="/assets/js/theme.js?v=7af685e2ba20b37fef545c97b8064050"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?v=5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
+    initTheme();
+  </script> </head> <body class="fixed-top-nav "> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> <span class="font-weight-bold">Manoj</span> Bhatta </a> <button class="navbar-toggler collapsed navbar-toggler-main" type="button" data-nav-toggle="navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse navbar-collapse-main" id="navbarNav"> <ul class="navbar-nav navbar-menu-list flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item "> <a class="nav-link" href="/blog/">blog </a> </li> <li class="nav-item active"> <a class="nav-link" href="/projects/">projects <span class="sr-only">(current)</span> </a> </li> <li class="nav-item "> <a class="nav-link" href="/cv/">CV </a> </li> <li class="nav-item"> <button id="search-toggle" type="button" title="Search" aria-label="Open search"> <span class="nav-link">ctrl k <i class="fa-solid fa-magnifying-glass"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" type="button" title="Change theme" aria-label="Change color theme"> <i class="fa-half-sun-moon" id="light-toggle-system"></i> <i class="fa-solid fa-moon" id="light-toggle-dark"></i> <i class="fa-solid fa-sun" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <header class="post-header"> <h1 class="post-title">Open-Vocabulary Navigation</h1> <p class="post-description">Open-vocabulary navigation in a Gazebo living-room. A dense CLIP-feature semantic map is built from posed RGB-D data and queried by arbitrary text to drive a robot to the right object.</p> </header> <article> <h2 id="overview">Overview</h2> <p><code class="language-plaintext highlighter-rouge">ov_nav</code> is an end-to-end, open-vocabulary navigation stack built on top of <a href="https://vlmaps.github.io/" rel="external nofollow noopener" target="_blank">VLMaps</a>, re-implemented and adapted for a <strong>ROS 2 (Jazzy) + Gazebo (Harmonic)</strong> pipeline instead of the original Habitat simulator.</p> <p>The core idea behind this is, instead of baking a fixed list of object categories into the map, every 2D grid cell stores a dense <strong>CLIP feature vector</strong>. A navigation goal is then generated on the fly by encoding an <em>arbitrary</em> text query (e.g. <code class="language-plaintext highlighter-rouge">"rug"</code>, <code class="language-plaintext highlighter-rouge">"sofa"</code>) and finding the map cell whose stored features are most similar to the query embedding.</p> <pre><code class="language-mermaid">flowchart TD
+    subgraph Gazebo["Gazebo Harmonic"]
+        direction LR
+        W[Living-room world] --&gt; R[Robot&lt;br/&gt;RGB + depth camera, LiDAR, diff-drive]
+    end
+
+    subgraph Perception["Data collection"]
+        direction LR
+        REC[data_recorder&lt;br/&gt;rolling-cache RGB-D-pose sync]
+        POS[publish_pose&lt;br/&gt;odom → camera_link TF]
+    end
+
+    subgraph MapBuilding["Offline VLMap construction"]
+        direction LR
+        LSEG[LSeg dense CLIP features&lt;br/&gt;H×W×512 per frame] --&gt; BP[Depth backprojection&lt;br/&gt;pixels → 3D → ground plane] --&gt; GRID[150×150 grid @ 5cm&lt;br/&gt;running-average feature fusion] --&gt; OBST[obstacles grid&lt;br/&gt;height-thresholded]
+    end
+
+    subgraph Query["Query → goal"]
+        direction LR
+        text_query["text query&lt;br/&gt;/vlmap/query"] --&gt; CLIP[CLIP ViT-B/32&lt;br/&gt;text encoder] --&gt; SIM[cosine similarity&lt;br/&gt;grid · query → argmax top-K] --&gt; CELL[grid_id2pos → world pose&lt;br/&gt;obstacle-safe fallback]
+    end
+
+    subgraph Nav["Navigation"]
+        direction LR
+        NAV2[Nav2&lt;br/&gt;AMCL + NavFn + DWB] --&gt; GOAL[robot drives to goal]
+    end
+
+    R --&gt; REC
+    REC --&gt; LSEG
+    GRID --&gt; SIM
+    OBST --&gt; CELL
+    CELL --&gt; NAV2
+</code></pre> <p>The whole system was built and tested in simulation: a custom URDF robot (RGB + depth camera, 2D LiDAR, differential drive) teleoperated through a furnished living-room world while a data recorder captured synchronized frames.</p> <h2 id="implementation">Implementation</h2> <h3 id="1-dense-feature-extraction--mapping">1. Dense feature extraction &amp; mapping</h3> <ul> <li>A <strong>CLIP ViT-B/32</strong> model provides the shared image/text embedding space (512-D).</li> <li>Per-pixel dense features come from an <strong>LSeg</strong> encoder (language-driven segmentation head over a CLIP ViT backbone), producing <code class="language-plaintext highlighter-rouge">H×W×512</code> feature maps per frame.</li> <li>Each RGB-D frame is backprojected using the camera intrinsics: every valid depth pixel (<code class="language-plaintext highlighter-rouge">z &gt; 0.1 m</code>) becomes a 3D point, transformed into the map frame by the camera pose, then projected orthographically onto the ground plane.</li> <li>Points fall into a <strong>150 × 150 grid at 0.05 m/cell</strong> (7.5 m × 7.5 m). Each cell accumulates its observed features with an <strong>incremental running average</strong> (<code class="language-plaintext highlighter-rouge">grid = (grid·w + feat) / (w+1)</code>), so features are fused across frames and viewpoints.</li> <li>A parallel <code class="language-plaintext highlighter-rouge">obstacles</code> grid marks cells free/occupied by thresholding point height, and an RGB top-down image (<code class="language-plaintext highlighter-rouge">color_top_down</code>) is produced for visualization.</li> </ul> <h3 id="2-query--goal">2. Query → goal</h3> <ul> <li>A text query is tokenized and encoded by the <strong>CLIP text encoder</strong>, then L2-normalized.</li> <li>Cosine similarity with every grid cell is a single matrix product (<code class="language-plaintext highlighter-rouge">grid @ text_feat.T</code>), since cell features are also L2-normalized.</li> <li>The <strong>top-K cells</strong> (default K=5) are averaged to get a stable goal centroid, and the grid index is converted back to a world coordinate via <code class="language-plaintext highlighter-rouge">grid_id2pos</code>.</li> <li>Goals falling in an obstacle cell are repaired by searching the 8 surrounding cells for the nearest free one.</li> </ul> <h3 id="3-ros-2-integration">3. ROS 2 integration</h3> <p>Three custom nodes glue the stack together:</p> <table> <thead> <tr> <th>Node</th> <th>Responsibility</th> </tr> </thead> <tbody> <tr> <td><code class="language-plaintext highlighter-rouge">data_recorder</code></td> <td>Manually syncs RGB, depth, and pose via a rolling-cache closest-timestamp matcher (avoids the flakiness of <code class="language-plaintext highlighter-rouge">ApproximateTimeSynchronizer</code> with Gazebo’s BEST_EFFORT QoS); decimates frames with motion thresholds (Δpos ≥ 0.10 m, Δrot ≥ 5°)</td> </tr> <tr> <td><code class="language-plaintext highlighter-rouge">publish_pose</code></td> <td>Publishes the camera pose by looking up the <code class="language-plaintext highlighter-rouge">odom → camera_link</code> transform</td> </tr> <tr> <td><code class="language-plaintext highlighter-rouge">vlmap_to_nav2</code></td> <td>Subscribes to <code class="language-plaintext highlighter-rouge">/vlmap/query</code> (<code class="language-plaintext highlighter-rouge">std_msgs/String</code>), loads the prebuilt map + CLIP model, computes similarity, builds a <code class="language-plaintext highlighter-rouge">PoseStamped</code> goal, and sends it to Nav2 via the <code class="language-plaintext highlighter-rouge">navigate_to_pose</code> <strong>action client</strong> </td> </tr> </tbody> </table> <p><code class="language-plaintext highlighter-rouge">vlmap_to_nav2</code> also publishes the selected goal on <code class="language-plaintext highlighter-rouge">/vlmap/goal_pose</code> for live RViz visualization, handles the VLMap↔Nav2 coordinate-frame offset via <code class="language-plaintext highlighter-rouge">map_origin_x/y</code> parameters, and uses a threshold (default 0.20) + top-K to filter spurious detections.</p> <p>The occupancy grid is bridged to Nav2 two ways: a SLAM-Toolbox map (lidar) for standard <code class="language-plaintext highlighter-rouge">map_server</code>, and a small converter (<code class="language-plaintext highlighter-rouge">npy_nav2_map.py</code>) that writes the VLMap obstacle grid to <code class="language-plaintext highlighter-rouge">.pgm</code> + <code class="language-plaintext highlighter-rouge">.yaml</code>.</p> <h2 id="results">Results</h2> <h3 id="clip-similarity-experiments">CLIP similarity experiments</h3> <p>Before building the full map, I validated the <em>spatial</em> semantics of CLIP features by hooking the final transformer block of a <strong>CLIP ViT-B/16</strong> encoder to capture per-patch tokens (14×14 patches). Projecting these into the shared embedding space and computing cosine similarity against a text query shows exactly <em>where</em> the query concept lives in the image:</p> <div class="row justify-content-center"> <div class="col-12"> <figure> <picture> <source class="responsive-img-srcset" srcset="/assets/img/clip_similarity_output-480.webp 480w,/assets/img/clip_similarity_output-800.webp 800w,/assets/img/clip_similarity_output-1400.webp 1400w," type="image/webp" sizes="95vw"></source> <img src="/assets/img/clip_similarity_output.png" class="img-fluid rounded z-depth-1" width="100%" height="auto" title="CLIP patch-level cosine similarity for a text query overlaid on image" loading="eager" onerror="this.onerror=null; document.querySelectorAll('.responsive-img-srcset').forEach(function (n) { n.remove(); });"> </picture> </figure> </div> </div> <div class="caption"> CLIP patch-level cosine similarity for the query — RGB · depth · 14×14 similarity grid · heatmap overlay. </div> <p>The low-resolution patch grid is bicubic-interpolated to 224×224 and alpha-blended over the RGB frame, making the spatial correspondence between text and pixels explicit. And once these features are embedded into the every 3d point of the map to get a semantic representation, we can query the map to get the points with most similarity.</p> <div class="row justify-content-center"> <div class="col-sm-8"> <figure> <picture> <source class="responsive-img-srcset" srcset="/assets/img/lamp-480.webp 480w,/assets/img/lamp-800.webp 800w,/assets/img/lamp-1400.webp 1400w," type="image/webp" sizes="95vw"></source> <img src="/assets/img/lamp.png" class="img-fluid rounded z-depth-1" width="100%" height="auto" title="Heatmap for similarity search between query 'lamp' with the vlmap" loading="eager" onerror="this.onerror=null; document.querySelectorAll('.responsive-img-srcset').forEach(function (n) { n.remove(); });"> </picture> </figure> </div> </div> <div class="caption"> Heatmap for similarity search between query 'lamp' with the vlmap (Red mark is the cluster of points with highest similarity). </div> <h3 id="vlmap-visualization">VLMap visualization</h3> <p>The constructed map exposes the same structure as the raw data it was built from:</p> <div class="row justify-content-center g-2"> <div class="col-6 col-sm-6"> <figure> <picture> <source class="responsive-img-srcset" srcset="/assets/img/gz_env-480.webp 480w,/assets/img/gz_env-800.webp 800w,/assets/img/gz_env-1400.webp 1400w," type="image/webp" sizes="95vw"></source> <img src="/assets/img/gz_env.png" class="img-fluid rounded z-depth-1" width="100%" height="auto" title="Gazebo Environment" loading="eager" onerror="this.onerror=null; document.querySelectorAll('.responsive-img-srcset').forEach(function (n) { n.remove(); });"> </picture> </figure> </div> <div class="col-6 col-sm-6"> <figure> <picture> <source class="responsive-img-srcset" srcset="/assets/img/color_top_down-480.webp 480w,/assets/img/color_top_down-800.webp 800w,/assets/img/color_top_down-1400.webp 1400w," type="image/webp" sizes="95vw"></source> <img src="/assets/img/color_top_down.png" class="img-fluid rounded z-depth-1" width="100%" height="auto" title="Color Top-Down" loading="eager" onerror="this.onerror=null; document.querySelectorAll('.responsive-img-srcset').forEach(function (n) { n.remove(); });"> </picture> </figure> </div> <div class="col-6 col-sm-6"> <figure> <picture> <source class="responsive-img-srcset" srcset="/assets/img/obstacle_map-480.webp 480w,/assets/img/obstacle_map-800.webp 800w,/assets/img/obstacle_map-1400.webp 1400w," type="image/webp" sizes="95vw"></source> <img src="/assets/img/obstacle_map.png" class="img-fluid rounded z-depth-1" width="100%" height="auto" title="Obstacle Map" loading="eager" onerror="this.onerror=null; document.querySelectorAll('.responsive-img-srcset').forEach(function (n) { n.remove(); });"> </picture> </figure> </div> <div class="col-6 col-sm-6"> <figure> <picture> <source class="responsive-img-srcset" srcset="/assets/img/vlmap_category-480.webp 480w,/assets/img/vlmap_category-800.webp 800w,/assets/img/vlmap_category-1400.webp 1400w," type="image/webp" sizes="95vw"></source> <img src="/assets/img/vlmap_category.png" class="img-fluid rounded z-depth-1" width="100%" height="auto" title="VLMap Category" loading="eager" onerror="this.onerror=null; document.querySelectorAll('.responsive-img-srcset').forEach(function (n) { n.remove(); });"> </picture> </figure> </div> </div> <div class="caption"> (T-B,L-R)Gazebo env, Color topdown view of vlmaps, Height clipped obstacle occupancy grid, Height clipped map with semantic categories specified </div> <h3 id="navigation">Navigation</h3> <p>With the Nav2 stack running (AMCL localization, NavFn global planner, DWB local planner), publishing <code class="language-plaintext highlighter-rouge">"lamp"</code> to <code class="language-plaintext highlighter-rouge">/vlmap/query</code> produces a real <code class="language-plaintext highlighter-rouge">NavigateToPose</code> goal at the lamp’s grid cell, and the robot plans a collision-free path and drives there.</p> <div class="row justify-content-center"> <div class="col-sm-10 col-md-8"> <video width="100%" controls="" autoplay="" loop="" muted="" class="img-fluid rounded z-depth-1"> <source src="/assets/video/projects/ov_nav/nav.mp4" type="video/mp4"></source> Your browser does not support the video tag. </video> <div class="caption"> Robot navigating to a text-query goal. </div> </div> </div> <h2 id="learning">Learning</h2> <ul> <li> <strong>Dense features are the hard part.</strong> CLIP’s image encoder is trained on global image-text pairs, so per-patch features are patchy and noisy at 14×14 resolution; LSeg’s dense head is what makes pixel-level grounding usable for mapping. The map’s quality is essentially the map of <em>where those dense features came from</em>.</li> <li> <strong>Point → grid accumulation is delicate.</strong> Cell resolution, the depth sampling rate, and the camera height all interact — too-dense sampling bloats runtime, and mis-set <code class="language-plaintext highlighter-rouge">camera_height</code> shifts the entire floor/obstacle boundary.</li> <li> <strong>Sensor synchronization in Gazebo is a silent killer.</strong> Approximate-time-synchronizer silently stalls when QoS or clock stamps misalign; a manual rolling-cache matcher with a <code class="language-plaintext highlighter-rouge">slop</code> window and a zero-stamp wall-clock fallback is far more debuggable — and the per-topic receive counters made diagnosing it straightforward.</li> <li> <strong>Two maps, two frames.</strong> The VLMap is built relative to the robot’s starting pose, while Nav2 reasons in the <code class="language-plaintext highlighter-rouge">map</code> frame. Reconciliations with simple origin offsets work, but a proper <code class="language-plaintext highlighter-rouge">tf2</code> static transform (<code class="language-plaintext highlighter-rouge">vlmap_origin → map</code>) is the robust production answer.</li> <li> <strong>The query is genuinely open-vocabulary.</strong> Because the map stores features rather than labels, goals like <code class="language-plaintext highlighter-rouge">"rug"</code> or <code class="language-plaintext highlighter-rouge">"curtains"</code> work with zero retraining or re-indexing — the same map serves arbitrary natural-language requests.</li> </ul> <hr> <h2 id="links">Links</h2> <ul> <li> <strong>Repository:</strong> <a href="https://github.com/manojbhatta/ov_nav" rel="external nofollow noopener" target="_blank">github</a> </li> </ul> <hr> <p><strong>Credits:</strong> based on <em>Visual Language Maps for Robot Navigation</em> (Chen et al., ICRA 2023) and its open-source implementation; LSeg (Li et al., CVPR 2022) for dense features; Nav2, SLAM Toolbox, and Gazebo for the simulation stack.</p> </article> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 Manoj Bhatta. Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="external nofollow noopener">GitHub Pages</a>. </div> </footer> <script>
+  window.alFolio = {
+    compatBootstrap: false
+  };
+</script> <script src="/assets/js/nav-toggle.js?v=141bd79a73ebc0f0b6ea58e440ae79fc"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?v=e49affc7bd2646f6acdad1dbe02c2359" type="text/javascript"></script> <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.7.0/dist/mermaid.min.js" integrity="sha256-TtLOdUA8mstPoO6sGvHIGx2ceXrrX4KgIItO06XOn8A=" crossorigin="anonymous"></script> <script defer src="/assets/al_charts/js/mermaid-setup.js" type="text/javascript"></script> <script defer type="text/javascript" id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js" integrity="sha256-MASABpB4tYktI2Oitl4t+78w/lyA+D7b/s9GEP0JOGI=" crossorigin="anonymous"></script> <script src="/assets/al_math/js/mathjax-setup.js"></script> <script defer src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script> <script src="/assets/js/tooltips-setup.js?v=fe487e99db6c43751e6e7bdb2d6a0611"></script> <script src="/assets/js/no_defer.js?v=53b1b1a645525975c963ce8bf8bfefcf"></script> <script defer src="/assets/js/common.js?v=87baac90f765f2f3362dcf6aaf312a8a"></script> <script defer src="/assets/js/copy_code.js?v=c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?v=896d254890d9b47f0281f63bfccf0dee"></script> <script async src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script> <script async src="https://badge.dimensions.ai/badge.js"></script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/al_img_tools/js/zoom.js"></script> <script defer src="/assets/js/progress-bar.js?v=499464c5c63ced6cf7ad62509f1e2610" type="text/javascript"></script> <script src="https://cdn.jsdelivr.net/npm/vanilla-back-to-top@7.2.1/dist/vanilla-back-to-top.min.js" integrity="sha256-uMJJ3EoTyfRBoTbR+lrfu1uRQ87RZG8AR3cVNuQVeFg=" crossorigin="anonymous"></script> <script>
+    addBackToTop();
+  </script> <script type="module" src="/assets/al_search/js/search/ninja-keys.min.js"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/al_search/js/search-setup.js"></script> <script>
+// get the ninja-keys element
+const ninja = document.querySelector('ninja-keys');
+
+// add the home and posts menu items
+ninja.data = [{
+    id: "nav-about",
+    title: "about",
+    section: "Navigation",
+    handler: () => {
+      window.location.href = "/";
+    },
+  },{id: "nav-blog",
+          title: "blog",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/blog/";
+          },
+        },{id: "nav-projects",
+          title: "projects",
+          description: "A growing collection of your cool projects.",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/projects/";
+          },
+        },{id: "nav-cv",
+          title: "CV",
+          description: "",
+          section: "Navigation",
+          handler: () => {
+            window.location.href = "/cv/";
+          },
+        },{id: "post-open-vocabulary-navigatoin",
+        
+          title: "Open-vocabulary navigatoin",
+        
+        description: "A review of the recent open vocabulary object navigation frameworks",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/ov-nav/";
+          
+        },
+      },{id: "post-solving-2d-transient-heat-conduction-with-physics-informed-neural-networks",
+        
+          title: "Solving 2D Transient Heat Conduction with Physics-Informed Neural Networks",
+        
+        description: "Building a mesh-free PDE solver in PyTorch, validating it against an ANSYS finite-element solution, and what that taught me about scientific machine learning.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2025/pinn-heat-conduction/";
+          
+        },
+      },{id: "projects-four-bar-mechanism-synthesis",
+          title: 'Four-bar mechanism synthesis',
+          description: "Calculating four bar parameters to trace a given path",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/fourbar/";
+            },},{id: "projects-autonomous-navigation",
+          title: 'Autonomous Navigation',
+          description: "Designed and developed an AGV capable of navigating unknown environments using LiDAR-based SLAM and Nav2.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/fyp/";
+            },},{id: "projects-open-vocabulary-navigation",
+          title: 'Open-Vocabulary Navigation',
+          description: "Open-vocabulary navigation in a Gazebo living-room. A dense CLIP-feature semantic map is built from posed RGB-D data and queried by arbitrary text to drive a robot to the right object.",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/ovnav/";
+            },},{id: "projects-pinn",
+          title: 'PINN',
+          description: "Implementation of Physics Informed Neural Network for 2d heat conduction",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/pinn/";
+            },},{id: "projects-rl-for-balancing-wheeled-biped",
+          title: 'RL for balancing wheeled biped',
+          description: "an isaac lab env for making a wheeled biped learn to balance",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/upkie/";
+            },},{id: "teachings-data-science-fundamentals",
+          title: 'Data Science Fundamentals',
+          description: "This course covers the foundational aspects of data science, including data collection, cleaning, analysis, and visualization. Students will learn practical skills for working with real-world datasets.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/data-science-fundamentals/";
+            },},{id: "teachings-introduction-to-machine-learning",
+          title: 'Introduction to Machine Learning',
+          description: "This course provides an introduction to machine learning concepts, algorithms, and applications. Students will learn about supervised and unsupervised learning, model evaluation, and practical implementations.",
+          section: "Teachings",handler: () => {
+              window.location.href = "/teachings/introduction-to-machine-learning/";
+            },},{
+        id: 'social-email',
+        title: 'email',
+        section: 'Socials',
+        handler: () => {
+          window.open("mailto:%62%68%61%74%74%61%6D%61%6E%6F%7A%31%32%34@%67%6D%61%69%6C.%63%6F%6D", "_blank");
+        },
+      },{
+        id: 'social-linkedin',
+        title: 'LinkedIn',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://www.linkedin.com/in/manojbhatta101", "_blank");
+        },
+      },{
+        id: 'social-github',
+        title: 'GitHub',
+        section: 'Socials',
+        handler: () => {
+          window.open("https://github.com/manojbhatta", "_blank");
+        },
+      },{
+      id: 'light-theme',
+      title: 'Change theme to light',
+      description: 'Change the theme of the site to Light',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("light");
+      },
+    },
+    {
+      id: 'dark-theme',
+      title: 'Change theme to dark',
+      description: 'Change the theme of the site to Dark',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("dark");
+      },
+    },
+    {
+      id: 'system-theme',
+      title: 'Use system default theme',
+      description: 'Change the theme of the site to System Default',
+      section: 'Theme',
+      handler: () => {
+        setThemeSetting("system");
+      },
+    },];
+
+</script> <script src="/assets/al_search/js/shortcut-key.js"></script> </body> </html>
