@@ -23,7 +23,6 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-Hello, I am Manoj, a  Mechanical engineering graduate from Institute of Engineering, Pulchowk Campus - Nepal. I like approaching problems from first principles to understand how things truly work. My research interests lie in robotics, particularly robot learning at the intersection of deep learning and reinforcement learning, where I hope to contribute through both fundamental and applied research.  
+Hello, I am Manoj, a Mechanical engineering graduate from Institute of Engineering, Pulchowk Campus - Nepal. I like approaching problems from first principles to understand how things truly work. My research interests lie in robotics, particularly robot learning at the intersection of deep learning and reinforcement learning, where I hope to contribute through both fundamental and applied research.
 
-Outside of engineering, I enjoy playing basketball, practicing calisthenics, and working out.  
-
+Outside of engineering, I enjoy playing basketball, practicing calisthenics, and working out.

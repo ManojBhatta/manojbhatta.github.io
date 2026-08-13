@@ -9,15 +9,13 @@ related_publications: false
 mermaid:
   enabled: true
   zoomable: false
-
 ---
 
 ## Overview
 
 `ov_nav` is an end-to-end, open-vocabulary navigation stack built on top of [VLMaps](https://vlmaps.github.io/), re-implemented and adapted for a **ROS 2 (Jazzy) + Gazebo (Harmonic)** pipeline instead of the original Habitat simulator.
 
-The core idea behind this is, instead of baking a fixed list of object categories into the map, every 2D grid cell stores a dense **CLIP feature vector**. A navigation goal is then generated on the fly by encoding an *arbitrary* text query (e.g. `"rug"`, `"sofa"`) and finding the map cell whose stored features are most similar to the query embedding.
-
+The core idea behind this is, instead of baking a fixed list of object categories into the map, every 2D grid cell stores a dense **CLIP feature vector**. A navigation goal is then generated on the fly by encoding an _arbitrary_ text query (e.g. `"rug"`, `"sofa"`) and finding the map cell whose stored features are most similar to the query embedding.
 
 ```mermaid
 flowchart TD
@@ -77,11 +75,11 @@ The whole system was built and tested in simulation: a custom URDF robot (RGB + 
 
 Three custom nodes glue the stack together:
 
-| Node | Responsibility |
-|------|----------------|
+| Node            | Responsibility                                                                                                                                                                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `data_recorder` | Manually syncs RGB, depth, and pose via a rolling-cache closest-timestamp matcher (avoids the flakiness of `ApproximateTimeSynchronizer` with Gazebo's BEST_EFFORT QoS); decimates frames with motion thresholds (Δpos ≥ 0.10 m, Δrot ≥ 5°) |
-| `publish_pose` | Publishes the camera pose by looking up the `odom → camera_link` transform |
-| `vlmap_to_nav2` | Subscribes to `/vlmap/query` (`std_msgs/String`), loads the prebuilt map + CLIP model, computes similarity, builds a `PoseStamped` goal, and sends it to Nav2 via the `navigate_to_pose` **action client** |
+| `publish_pose`  | Publishes the camera pose by looking up the `odom → camera_link` transform                                                                                                                                                                  |
+| `vlmap_to_nav2` | Subscribes to `/vlmap/query` (`std_msgs/String`), loads the prebuilt map + CLIP model, computes similarity, builds a `PoseStamped` goal, and sends it to Nav2 via the `navigate_to_pose` **action client**                                  |
 
 `vlmap_to_nav2` also publishes the selected goal on `/vlmap/goal_pose` for live RViz visualization, handles the VLMap↔Nav2 coordinate-frame offset via `map_origin_x/y` parameters, and uses a threshold (default 0.20) + top-K to filter spurious detections.
 
@@ -91,7 +89,7 @@ The occupancy grid is bridged to Nav2 two ways: a SLAM-Toolbox map (lidar) for s
 
 ### CLIP similarity experiments
 
-Before building the full map, I validated the *spatial* semantics of CLIP features by hooking the final transformer block of a **CLIP ViT-B/16** encoder to capture per-patch tokens (14×14 patches). Projecting these into the shared embedding space and computing cosine similarity against a text query shows exactly *where* the query concept lives in the image:
+Before building the full map, I validated the _spatial_ semantics of CLIP features by hooking the final transformer block of a **CLIP ViT-B/16** encoder to capture per-patch tokens (14×14 patches). Projecting these into the shared embedding space and computing cosine similarity against a text query shows exactly _where_ the query concept lives in the image:
 
 <div class="row justify-content-center">
     <div class="col-12">
@@ -143,7 +141,6 @@ The constructed map exposes the same structure as the raw data it was built from
 
 With the Nav2 stack running (AMCL localization, NavFn global planner, DWB local planner), publishing `"lamp"` to `/vlmap/query` produces a real `NavigateToPose` goal at the lamp's grid cell, and the robot plans a collision-free path and drives there.
 
-
 <div class="row justify-content-center">
   <div class="col-sm-10 col-md-8">
     <video width="100%" controls autoplay loop muted class="img-fluid rounded z-depth-1">
@@ -160,7 +157,7 @@ With the Nav2 stack running (AMCL localization, NavFn global planner, DWB local 
 
 ## Learning
 
-- **Dense features are the hard part.** CLIP's image encoder is trained on global image-text pairs, so per-patch features are patchy and noisy at 14×14 resolution; LSeg's dense head is what makes pixel-level grounding usable for mapping. The map's quality is essentially the map of *where those dense features came from*.
+- **Dense features are the hard part.** CLIP's image encoder is trained on global image-text pairs, so per-patch features are patchy and noisy at 14×14 resolution; LSeg's dense head is what makes pixel-level grounding usable for mapping. The map's quality is essentially the map of _where those dense features came from_.
 - **Point → grid accumulation is delicate.** Cell resolution, the depth sampling rate, and the camera height all interact — too-dense sampling bloats runtime, and mis-set `camera_height` shifts the entire floor/obstacle boundary.
 - **Sensor synchronization in Gazebo is a silent killer.** Approximate-time-synchronizer silently stalls when QoS or clock stamps misalign; a manual rolling-cache matcher with a `slop` window and a zero-stamp wall-clock fallback is far more debuggable — and the per-topic receive counters made diagnosing it straightforward.
 - **Two maps, two frames.** The VLMap is built relative to the robot's starting pose, while Nav2 reasons in the `map` frame. Reconciliations with simple origin offsets work, but a proper `tf2` static transform (`vlmap_origin → map`) is the robust production answer.
@@ -169,8 +166,9 @@ With the Nav2 stack running (AMCL localization, NavFn global planner, DWB local 
 ---
 
 ## Links
-* **Repository:** [github](https://github.com/manojbhatta/ov_nav)
+
+- **Repository:** [github](https://github.com/manojbhatta/ov_nav)
 
 ---
 
-**Credits:** based on *Visual Language Maps for Robot Navigation* (Chen et al., ICRA 2023) and its open-source implementation; LSeg (Li et al., CVPR 2022) for dense features; Nav2, SLAM Toolbox, and Gazebo for the simulation stack.
+**Credits:** based on _Visual Language Maps for Robot Navigation_ (Chen et al., ICRA 2023) and its open-source implementation; LSeg (Li et al., CVPR 2022) for dense features; Nav2, SLAM Toolbox, and Gazebo for the simulation stack.

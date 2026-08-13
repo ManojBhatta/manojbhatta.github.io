@@ -2,7 +2,7 @@ cv:
   name: Manoj Bhatta
   label: Robotics & AI Engineer
   email: bhattamanoz124@gmail.com
-  phone: 
+  phone:
   location: Nepal
   image: ""
   social_networks:
@@ -112,7 +112,7 @@ cv:
       - name: Open Vocabulary Navigation
         summary: Implemented a ROS2-based open-vocabulary navigation system for a robot in Gazebo using dense semantic mapping and CLIP-based visual grounding for goal point specification via natural language prompts.
         highlights:
-          - Currently exploring methodologies for improving real-time navigation performance for dynamic environments like houses. 
+          - Currently exploring methodologies for improving real-time navigation performance for dynamic environments like houses.
         url: https://github.com/manojbhatta/ov_nav
 
       - name: Autonomous Mobile Robot using ROS2

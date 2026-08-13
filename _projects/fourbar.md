@@ -14,15 +14,16 @@ Built with **Sumit Thakur Barahi** and **Benzeena Dhakal** for the Samsung Innov
 
 ### Overview
 
-Given a target curve as a set of precision points, the goal is to find the nine linkage parameters, 
+Given a target curve as a set of precision points, the goal is to find the nine linkage parameters,
 
-* link lengths $r_1$–$r_4$, 
-* coupler offset $r_5, \beta$, and 
-* fixed-pivot pose $x_A, y_A, \alpha$  
+- link lengths $r_1$–$r_4$,
+- coupler offset $r_5, \beta$, and
+- fixed-pivot pose $x_A, y_A, \alpha$
 
 so a coupler-plane point traces it as closely as possible. Analytical methods cap out at nine precision points; beyond that, synthesis is framed as global optimization instead, solved here with SciPy's differential evolution.
 
 {% include figure.liquid path="assets/img/projects/fourbar/9vars.png" title="Nine design variables of a path-generator four-bar linkage" class="img-fluid rounded z-depth-1" %}
+
 <div class="caption">
     The nine design variables of a path-generator four-bar linkage.
 </div>
@@ -35,7 +36,6 @@ Only 4 variables — pivot $(x_A, y_A)$, coupler length $r_3$, offset angle $\be
 - **Grashof penalty:** penalizes linkages that fail Grashof's condition or where the input link isn't shortest, ruling out non-crank solutions.
 - **Differential evolution:** searches the 4D space via `scipy.optimize.differential_evolution`.
 - **Animation:** Matplotlib animates the resulting crank-rocker motion against the target curve.
-
 
 ### Results and learnings
 

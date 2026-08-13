@@ -3,15 +3,15 @@ layout: post
 title: Solving 2D Transient Heat Conduction with Physics-Informed Neural Networks
 date: 2025-04-02 10:00:00-0400
 description: Building a mesh-free PDE solver in PyTorch, validating it against an ANSYS finite-element solution, and what that taught me about scientific machine learning.
-tags: pinn  scientific-ml 
-categories: 
+tags: pinn  scientific-ml
+categories:
 giscus_comments: false
 related_posts: false
 toc:
   sidebar: top
 ---
 
-During my internship,The question I explored was how can surrogate models like Physics informed neural nets be used as surrogate models as a replacement to traditional numerical solvers.  Physics-Informed Neural Networks (PINNs) are a mesh-free way to solve PDEs by baking the governing equations directly into the loss function instead of relying purely on labeled data. I wanted to move past the idea and actually build one, benchmark it rigorously against a trusted numerical solution, and understand where it holds up and where it doesn't.
+During my internship,The question I explored was how can surrogate models like Physics informed neural nets be used as surrogate models as a replacement to traditional numerical solvers. Physics-Informed Neural Networks (PINNs) are a mesh-free way to solve PDEs by baking the governing equations directly into the loss function instead of relying purely on labeled data. I wanted to move past the idea and actually build one, benchmark it rigorously against a trusted numerical solution, and understand where it holds up and where it doesn't.
 
 This post walks through what I built, how I built it, and — more importantly — what the process taught me about scientific machine learning.
 
@@ -29,7 +29,7 @@ To have a credible reference to validate against, I first solved the same proble
 
 ## Why PINNs, and what makes them different
 
-A standard neural network learns a mapping from data alone. A PINN learns a mapping that is *also* constrained to satisfy a differential equation everywhere in the domain, by penalizing the residual of the PDE at randomly sampled points. This blurs the line between data-driven and physics-based modeling: no labeled interior data is required at all — the "supervision" comes from calculus.
+A standard neural network learns a mapping from data alone. A PINN learns a mapping that is _also_ constrained to satisfy a differential equation everywhere in the domain, by penalizing the residual of the PDE at randomly sampled points. This blurs the line between data-driven and physics-based modeling: no labeled interior data is required at all — the "supervision" comes from calculus.
 
 That property is what makes PINNs appealing for engineering problems: no expensive mesh generation, and, in principle, better generalization since the model is anchored to physical law rather than pattern-matching alone. It also comes with real costs (I'll get to those), which is exactly why I wanted to benchmark it seriously rather than take the promise at face value.
 
@@ -56,7 +56,6 @@ class pinn2d(nn.Module):
         return self.out_layer(out)
 ```
 
-
 ## Sampling the domain instead of meshing it
 
 Since there's no mesh, the model needs points to evaluate its physics loss at. I used a **Latin Hypercube Sampler** (via `scipy.stats.qmc`) rather than uniform random sampling, because LHS gives much better space-filling coverage of the domain with fewer points — useful when every extra collocation point adds cost to every training step through backpropagation. Concretely, I sampled:
@@ -67,7 +66,7 @@ Since there's no mesh, the model needs points to evaluate its physics loss at. I
 
 ## Encoding the physics: automatic differentiation as the loss
 
-This is the core trick of a PINN, and the part I found most instructive. Instead of discretizing derivatives with finite differences on a grid, I get *exact* derivatives of the network's output with respect to its inputs using PyTorch's `autograd`:
+This is the core trick of a PINN, and the part I found most instructive. Instead of discretizing derivatives with finite differences on a grid, I get _exact_ derivatives of the network's output with respect to its inputs using PyTorch's `autograd`:
 
 ```python
 u = pinn(x, y, t)
@@ -86,7 +85,7 @@ $$
 \mathcal{L} = \mathcal{L}_{\text{PDE}} + \lambda \cdot \mathcal{L}_{\text{boundary}} + \mathcal{L}_{\text{initial}}
 $$
 
-I weighted the boundary loss ($$\lambda = 5$$) more heavily than the PDE residual and initial-condition terms. This was a deliberate, empirical choice: early runs without extra boundary weighting produced solutions that satisfied the interior physics reasonably well but drifted from the prescribed wall temperatures, since the PDE residual term — sampled over thousands of interior points — otherwise dominates the gradient signal. 
+I weighted the boundary loss ($$\lambda = 5$$) more heavily than the PDE residual and initial-condition terms. This was a deliberate, empirical choice: early runs without extra boundary weighting produced solutions that satisfied the interior physics reasonably well but drifted from the prescribed wall temperatures, since the PDE residual term — sampled over thousands of interior points — otherwise dominates the gradient signal.
 
 ## A two-stage optimization strategy
 
@@ -101,11 +100,11 @@ Adam is great at making fast early progress with noisy, high-dimensional gradien
 
 I trained three architectures under identical conditions — a shallow-and-narrow network, a medium one, and a deep-and-wide one — to see how capacity trades off against accuracy for this problem:
 
-| Architecture | Loss after 100 epochs | Validation domain relative error |
-|:---|:---:|:---:|
-| 4 layers × 50 units | 0.7492 | 0.01456 |
-| 5 layers × 100 units | 0.029 | **0.01421** |
-| 6 layers × 200 units | 0.40 | 0.01412 |
+| Architecture         | Loss after 100 epochs | Validation domain relative error |
+| :------------------- | :-------------------: | :------------------------------: |
+| 4 layers × 50 units  |        0.7492         |             0.01456              |
+| 5 layers × 100 units |         0.029         |           **0.01421**            |
+| 6 layers × 200 units |         0.40          |             0.01412              |
 
 The 5×100 network turned out to be the sweet spot for this problem: it converged dramatically faster than the other two in early training and landed within a hair of the largest network's final accuracy, at a fraction of the training cost. The 6×200 network's advantage over 5×100 in final relative error was marginal, which shows that **more parameters buys diminishing returns once the network has enough capacity to represent the solution manifold**, and for smooth, low-dimensional PDE solutions like this one, that ceiling is reached quickly.
 
@@ -127,6 +126,4 @@ A few things stuck with me well beyond this specific problem:
 
 One thing this setup does **not** test is generalization across boundary conditions. As built, the boundary temperatures are hardcoded constants inside the loss function rather than inputs to the network — so the trained model only ever knows how to solve the one boundary-value problem it was trained on.
 
-
-
-*Full implementation (PyTorch, `autograd`-based PDE residuals, LHS sampling, Adam + L-BFGS training) available at [github](https://github.com/ManojBhatta/pinn)*
+_Full implementation (PyTorch, `autograd`-based PDE residuals, LHS sampling, Adam + L-BFGS training) available at [github](https://github.com/ManojBhatta/pinn)_
