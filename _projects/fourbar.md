@@ -5,7 +5,7 @@ description: Calculating four bar parameters to trace a given path
 img: assets/img/fourbar.png
 importance: 3
 category: work
-related_publications: true
+related_publications: false
 ---
 
 The project is a python implementation to synthesizes a four-bar linkage's nine design parameters so its coupler point traces a given target path, using differential evolution and a circular-proximity objective function.

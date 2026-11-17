@@ -5,7 +5,7 @@ description: Implementation of Physics Informed Neural Network for 2d heat condu
 img: assets/img/pinn.png
 importance: 3
 category: work
-related_publications: true
+related_publications: false
 ---
 
 ## Overview
