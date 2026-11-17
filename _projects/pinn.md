@@ -54,4 +54,4 @@ The PINN's predicted temperature field was validated against a 10,000-node ANSYS
 
 Weighting the boundary loss more heavily than the PDE residual was key to getting a physically meaningful solution rather than one that only looked plausible in the interior. Switching from Adam to L-BFGS partway through training also mattered: Adam makes fast early progress on the noisy, high-dimensional loss, while L-BFGS's curvature information squeezes out the last bit of accuracy near convergence. More broadly, capacity had a ceiling for this problem — a 5-layer x 100-unit network reached accuracy close to a much larger one at a fraction of the training cost.
 
-More details in [blog]() and Full implementation available on [GitHub](https://github.com/ManojBhatta/pinn).
+More details in the [blog post]({% post_url 2025-04-02-pinn-heat-conduction %}), and the full implementation is available on [GitHub](https://github.com/ManojBhatta/pinn).
