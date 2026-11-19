@@ -78,7 +78,12 @@ ninja.data = [{
             window.location.href = "/blog/2025/pinn-heat-conduction/";
           
         },
-      },{id: "projects-four-bar-mechanism-synthesis",
+      },{id: "projects-reveal-and-pick",
+          title: 'Reveal and Pick',
+          description: "One robot arm learns to push the leaves aside and the other arm picks the fruit",
+          section: "Projects",handler: () => {
+              window.location.href = "/projects/find_and_pick/";
+            },},{id: "projects-four-bar-mechanism-synthesis",
           title: 'Four-bar mechanism synthesis',
           description: "Calculating four bar parameters to trace a given path",
           section: "Projects",handler: () => {
@@ -90,7 +95,7 @@ ninja.data = [{
               window.location.href = "/projects/fyp/";
             },},{id: "projects-open-vocabulary-navigation",
           title: 'Open-Vocabulary Navigation',
-          description: "Open-vocabulary navigation in a Gazebo living-room. A dense CLIP-feature semantic map is built from posed RGB-D data and queried by arbitrary text to drive a robot to the right object.",
+          description: "A robot maps a room and then goes to any object you name in plain words, such as &quot;lamp&quot; or &quot;sofa&quot;",
           section: "Projects",handler: () => {
               window.location.href = "/projects/ovnav/";
             },},{id: "projects-pinn",
