@@ -3,7 +3,7 @@ layout: page
 title: Open-Vocabulary Navigation
 description: A robot maps a room and then goes to any object you name in plain words, such as "lamp" or "sofa"
 img: assets/img/ovnav.png
-importance: 2
+importance: 3
 category: work
 related_publications: false
 mermaid:

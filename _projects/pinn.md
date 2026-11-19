@@ -3,7 +3,7 @@ layout: page
 title: PINN
 description: Implementation of Physics Informed Neural Network for 2d heat conduction
 img: assets/img/pinn.png
-importance: 3
+importance: 5
 category: work
 related_publications: false
 ---

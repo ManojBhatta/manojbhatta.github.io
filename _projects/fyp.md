@@ -3,7 +3,7 @@ layout: page
 title: Autonomous Navigation
 description: Designed and developed an AGV capable of navigating unknown environments using LiDAR-based SLAM and Nav2.
 img: assets/img/fyp.png
-importance: 1
+importance: 4
 category: work
 related_publications: false
 mermaid:

@@ -3,7 +3,7 @@ layout: page
 title: Four-bar mechanism synthesis
 description: Calculating four bar parameters to trace a given path
 img: assets/img/fourbar.png
-importance: 3
+importance: 6
 category: work
 related_publications: false
 ---
